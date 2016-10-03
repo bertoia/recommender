@@ -19,6 +19,9 @@ class Optimiser():
         it = params.get('iter') if params.get('iter') else [150]
         bw = params.get('batch_words') if params.get('batch_words') else [20]
         bigram_trans = gensim.models.Phrases(self.corpus)
+        # 6 nested loops, what?!
+        # maybe there's a better way
+        # not sure if we can use scikit-learn
         for s in sz:
             for a in al:
                 for m in mt:
@@ -47,7 +50,13 @@ if __name__ == '__main__':
     tname = 'test_sim.txt'
     o.populate(tname)
     params = {}
+
+    ###################
+    # VARIABLE PARAMS #
+    ###################
     params['size'] = [4, 8, 12, 16]
-    params['iter'] = [100, 150, 200]
+    params['iter'] = [400, 800, 1000]
     params['batch_words'] = [15, 20]
+    ###################
+
     o.optimise(params)
