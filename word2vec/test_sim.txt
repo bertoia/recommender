@@ -1,0 +1,11 @@
+james cameron,avatar
+action,adventure
+action,thriller
+action,crime
+horror,mystery
+film-noir,crime
+daniel radcliffe,rupert grint
+kristen stewart,m. night shyamalan
+tangled,m. night shyamalan
+tangled,maleficent
+tangled,toy story
