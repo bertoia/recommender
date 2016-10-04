@@ -63,6 +63,13 @@ movie_final = pd.merge(movie, movie_tomato,
 
 movie_final.drop("id", axis=1, inplace=True)
 
+# add genre buckets
+genre_buckets = pd.read_csv(r"data/movies_with_genre_buckets.csv", encoding="ISO-8859-1")
+genre_buckets.drop("title", axis=1, inplace=True)
+movie_final = pd.merge(movie_final, genre_buckets,
+                       how="inner", left_on="movie_id", right_on="movie_id")
+
+
 # ------------- #
 # Movie Exports #
 # ------------- #
@@ -71,17 +78,19 @@ id_cols = ['movie_id', 'title']
 numeric_cols = ['year', 'rtAllCriticsRating', 'rtAudienceRating',
                 'rtAllCriticsNumReviews', 'rtAudienceNumRatings',
                 'rtAllCriticsScore', 'rtAudienceScore']
+genre_bucket_cols = ['drama', 'comedy', 'crime', 'action', 'thriller',
+                     'horror', 'fantasy', 'family', 'animation']
 categorical_cols = ['directorName', 'country']
 multi_categorical_cols = ["genres", "actorName"]
 genre_cols = ["genre_"+genre for genre in genres]
 
 
 # difficulty combinations
-# Easy:   kernel supports numeric inputs only (7 features)
+# Easy:   kernel supports numeric inputs only (7 features) + genre bucket probabilities (9 features)
 # Normal: kernel supports numeric inputs only (25 features)
 # Hard:   kernel supports numeric and categorical inputs (director, country)
 # Brutal: kernel supports numeric and multi-categorical input (genres, actors)
-easy_cols = id_cols + numeric_cols
+easy_cols = id_cols + numeric_cols + genre_bucket_cols
 normal_cols = id_cols + numeric_cols + genre_cols
 hard_cols = id_cols + numeric_cols + categorical_cols
 brutal_cols = id_cols + numeric_cols + categorical_cols + multi_categorical_cols
