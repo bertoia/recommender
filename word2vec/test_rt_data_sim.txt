@@ -1,0 +1,18 @@
+action,adventure
+action,crime
+thriller,mystery
+horror,mystery
+toy story,jumanji
+toy story,dracula: dead and loving it
+the battle of britain,the battle of russia
+the curious case of benjamin button,yes man
+samuel l. jackson,robert de niro
+samuel l. jackson,steve buscemi
+tom hanks,don rickles
+tom hanks,robert de niro
+alfred hitchcock,woody allen
+alfred hitchcock,clint eastwood
+alfred hitchcock,thriller
+woody allen,martin scorsese
+steven spielberg,action
+steven spielberg,horror
