@@ -7,8 +7,11 @@ class Test():
         self.word2 = word2
 
 class Optimiser():
-    def __init__(self, dirname, fname):
-        self.corpus = mclib.MovieCorpus(dirname, fname)
+    def __init__(self, dirname, fname, alt):
+        if alt:
+            self.corpus = mclib.AltMovieCorpus(dirname, fname)
+        else:
+            self.corpus = mclib.MovieCorpus(dirname, fname)
 
     def optimise(self, params={}):
         loop = len(params['size'])
@@ -45,9 +48,9 @@ class Optimiser():
 
 if __name__ == '__main__':
     dirname = '.'
-    fname = 'corpus.txt'
-    o = Optimiser(dirname, fname)
-    tname = 'test_sim.txt'
+    fname = 'corpusTrain.txt'
+    o = Optimiser(dirname, fname, True)
+    tname = 'rt_test.txt'
     o.populate(tname)
     params = {}
 
@@ -55,7 +58,7 @@ if __name__ == '__main__':
     # VARIABLE PARAMS #
     ###################
     params['size'] = [4, 8, 12, 16]
-    params['iter'] = [400, 800, 1000]
+    params['iter'] = [100, 200, 300]
     params['batch_words'] = [15, 20]
     ###################
 
