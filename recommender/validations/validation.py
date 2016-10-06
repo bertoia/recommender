@@ -7,25 +7,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import explained_variance_score
 
 
-# TODO: response mean scaling and skew correction
-def get_per_user_model_validation_result(users, movies, ratings,
-                                         per_user_kernel, per_movie_kernel,
-                                         movie_features, user_features,
-                                         train_test_ratio):
-    """
-
-    :param users: user dataframe
-    :param movies: movie dataframe
-    :param ratings: rating dataframe
-    :param per_user_kernel: kernel for per user model
-    :param per_movie_kernel: kernel for per movie model
-    :param movie_features: list of movie features
-    :param user_features: list of user features
-    :param train_test_ratio: train test ratio
-    :return: result dataframe
-    :returns pd.DataFrame
-    """
-
+def my_train_test_split(users, movies, ratings, movie_features,
+                        user_features, train_test_ratio):
     # ---------------- #
     # Train test split #
     # ---------------- #
@@ -37,6 +20,33 @@ def get_per_user_model_validation_result(users, movies, ratings,
     ratings_test, ratings_train = train_test_split(ratings,
                                                    test_size=train_test_ratio,
                                                    stratify=ratings[["user_id"]])
+    return ratings_test, ratings_train
+
+
+def train_test_split2(users, movies, ratings, movie_features,
+                      user_features, movie_user_ids):
+    ratings = pd.merge(ratings, movies, on="movie_id")
+    ratings = pd.merge(ratings, users, on="user_id")
+
+    ratings = ratings[["user_id", "movie_id"] +
+                      movie_features + user_features + ["rating"]]
+    ratings_train = ratings[ratings]
+    return
+
+
+# TODO: response mean scaling and skew correction
+def get_per_user_model_validation_result(ratings_test, ratings_train, ratings,
+                                         movie_features):
+    """
+
+    :param ratings: rating dataframe
+    :param per_user_kernel: kernel for per user model
+    :param movie_features: list of movie features
+    :param user_features: list of user features
+    :param train_test_ratio: train test ratio
+    :return: result dataframe
+    :returns pd.DataFrame
+    """
 
     # -------------- #
     # Per user model #
@@ -72,6 +82,12 @@ def get_per_user_model_validation_result(users, movies, ratings,
         ratings_test.loc[rating_test_user.index, "est_user"] = Yhat
         ratings_test.loc[rating_test_user.index, "est_user_var"] = variance
 
+    return ratings_test[["user_id", "movie_id", "rating", "est_user", "est_user_var"]]
+
+def get_per_user_model_validation_result(users, movies, ratings,
+                                         per_user_kernel, per_movie_kernel,
+                                         movie_features, user_features,
+                                         train_test_ratio):
     # --------------- #
     # Per movie model #
     # --------------- #
