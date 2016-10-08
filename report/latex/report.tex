@@ -1,0 +1,99 @@
+\def\year{2017}\relax
+
+\documentclass[letterpaper]{article}
+\usepackage{aaai17}
+\usepackage{times}
+\usepackage{helvet}
+\usepackage{courier}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\frenchspacing
+\setlength{\pdfpagewidth}{8.5in}
+\setlength{\pdfpageheight}{11in}
+\pdfinfo{
+/Title (Gaussian Process Regression for Movie Recommendations)
+/Author (Put All Your Authors Here, Separated by Commas)}
+\setcounter{secnumdepth}{1}  
+ \begin{document}
+% The file aaai.sty is the style file for AAAI Press 
+% proceedings, working notes, and technical reports.
+%
+\title{Gaussian Process Regression for Movie Recommendations}
+\author{Group 7\\
+National University of Singapore
+}
+\maketitle
+\begin{abstract}
+In recent years, online streaming and video on-demand services have grown exponentially. The online nature of such services necessarily multiplies the number of products that can be shown to the consumer. Consequently, there is a need for such services to determine a selection which should be recommended. In order to produce accurate predictions, there is a need to consider users' preferences, item profiles and correlations between items and users. In this paper, we attempt to apply Gaussian Process (GP) regression on movie ratings to generate recommendations.
+\end{abstract}
+
+\section{Introduction}
+\noindent Today, it is easy to obtain online information pertaining to a movie and its critics through a search on Google, IMDB, Rotten Tomatoes, etc. Hence, modern day movie watchers would often research online about a movie before buying tickets in their local cinema or paying for online streams on movie streaming platforms such as Netflix, Amazon Video, HBO, or Hulu.
+
+The rise of on-demand video services requires an accurate movie recommendation system in order to help users purchase the movies they like. As movie-watching shifts into the online world, consumers are faced with more choices as compared to the traditional way of browsing limited movies available in physical dvd rental stores or the theatre. Within the online ecosystem, services like Netflix are faced with the double-edged sword of being able to provide virtually any movie in existence to the consumer. Letting the consumer conduct an exhaustive search on this massive search space is certainly a computational burden that we would like to avoid.
+
+\section{Motivating Application}
+Moreover, motivating reasons such as word of the mouth, reviews and advertising are insufficient in the context of digitized movies. To cater to the consumer who faces the paradox of choice, there is a need for quality recommender systems which can enable movie watchers to discover movies they love on their own.
+
+Suppose a Gaussian process model can generate accurate predictive means of user ratings for a particular movie. We can then provide a good selection of recommended movies based on predicted ratings. This selection can be made on the basis of the predictive uncertainty that the Gaussian process model usefully provides. For example, we might obtain similarly high ratings for 2 movies, A and B. If the predictive uncertainty given by the Gaussian process model is such that $\sigma_A^2 > \sigma_B^2$, then we are more likely to recommend movie B, or rank it higher on our recommendation list. Alternatively, it is possible to use multiple models and weight our predictions inversely proportional to the variance. As a consequence, users will benefit by deriving greater enjoyment.
+
+With increased user satisfaction and hence higher utilisation of the system, we are also likely to obtain even more data from new ratings. This will allow us to further exploit the correlations among user preferences, as well as the Bayesian nature of Gaussian process models by updating the model with new data.
+
+Moreover, movie preference is highly personal and complex to model. Director, script, cast, score, visual effects and genres are just of some obvious features of a movie. To give a trivial example, an individual might not like mainstream A-listers action movies such as Fast \& Furious, Bourne or James Bond, but he may like Marvel action movies because he likes superhero comics. Even then, he might not like the newer Spiderman movies because of the main lead. He might love DC Comic Batman trilogy directed by Christopher Nolan but still be disappointed by Batman v Superman: Dawn of Justice.
+
+It is clear that modelling human behaviour and preference is complex. Using a parametric model could unintentionally constrain our model. Since the GP model is a distribution over an infinite number of functions, its non-parametric attribute allows us to better model the full spectrum of highly variable human preferences.
+
+To tackle this problem, we propose a movie recommender system based on the Gaussian Process (GP) model. Given a list of movies that an individual has not rated before, we can use GP to compute a predictive mean rating that the individual is likely to give and a predictive uncertainty which gives us insight on how accurate our prediction is.
+
+\section{Technical Approach}
+A Gaussian process is a collection of random variables, any finite subset of which have a multivariate Gaussian distribution. It is completely specified by a mean function $\mu(\textbf{x})$ and the covariance function $k(\textbf{x}, \textbf{x}')$. For a real process $f(\textbf{x})$:
+
+\begin{align*}
+	\mu(\textbf{x}) &= E[f(\textbf{x})] \\
+	k(\textbf{x}, \textbf{x}') &= E[(f(\textbf{x}) - \mu(\textbf{x}))(f(\textbf{x}') - \mu(\textbf{x}')] \\
+\end{align*}
+
+The GP can then be denoted as:
+\[f(\textbf{x}) \sim \mathcal{GP}(\mu(\textbf{x}), k(\textbf{x}, \textbf{x}'))\]
+
+We assume that our data $\mathcal{D} = \{(x_1, y_1), \ldots, (x_i, y_i)\}$ are such that $y_i$ are noisy observations originating from a GP-distributed random function $f(\textbf{x}_i)$ such that:
+
+\begin{align*}
+	y_i &= f(\textbf{x}_i) + \epsilon_i \\
+	\epsilon_i &\sim \mathcal{N}(0, \sigma_n^2)
+\end{align*}
+
+Given $\textbf{y} = [y_1y_2\ldots y_i]^\top$, suppose we have a new input $\textbf{x}_*$ for which we would like to obtain a prediction for. In other words, we would like to infer $p(f_* \mid \textbf{y})$. Then, the predictive mean and variance from the GP can be given by:
+\begin{align*}
+	E[f_* \mid \textbf{y}] = \mu(\textbf{x}_*) + \textbf{k}_*^\top (\textbf{K} + \sigma_n^2 \textbf{I})^{-1} (\textbf{y} - \boldsymbol{\mu}) \\
+	V[f_* \mid y] = k(\textbf{x}_*, \textbf{x}_*) - \textbf{k}_*^\top (\textbf{K} + \sigma_n^2 \textbf{I})^{-1} \textbf{k}_* \\
+\end{align*}
+
+\subsection{Choosing Model Parameters}
+We threw a die
+
+\section{Experimental Setup}
+\subsection{Dataset}
+Our primary dataset is the MovieLens 1M Dataset which is a stable benchmark dataset widely used for evaluating recommender systems. The primary dataset contains around 1,000,000 anonymous ratings of approximately 3,900 movies made by 6,040 MovieLens users who joined MovieLens\footnote{MovieLens is a movie recommender system created by GroupLens Research.} in 2000. Besides ratings, the following attributes were extracted from this dataset:
+
+\begin{description}
+	\item[movie\_id] movie identification number
+	\item[title] movie title
+	\item[genres] a list of genres that the movie belongs to
+\end{description}
+
+We also utilised user demographic information such as age, gender and occupation available from the dataset.
+
+To supplement this dataset, we combined it with the MovieLens+IMDb/Rotten Tomatoes Dataset released by HetRec 2011. Our motivation for doing so was to obtain movie critic ratings from Rotten Tomatoes. As the project progressed, we also extracted the relevant directors and actors for feature engineering purposes.
+
+\subsection{Preprocessing}
+
+\subsection{Feature Engineering}
+
+\section{Experimental Evaluation}
+We have discovered truly remarkable results which this margin is too small to contain
+
+\section{References}
+Note: max 6 pages
+
+\end{document}
