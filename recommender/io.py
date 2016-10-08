@@ -27,6 +27,13 @@ def get_rating():
     return pd.read_csv(r"data\rating.csv")
 
 
+def load_rating_movie(difficulty="easy"):
+    return pd.merge(get_rating(), get_movie_attr(difficulty))
+
+
+def load_rating_user(difficulty="easy"):
+    return pd.merge(get_rating(), get_user_attr(difficulty))
+
 if __name__ == '__main__':
     """Example of a per user model"""
     import GPy
@@ -45,3 +52,11 @@ if __name__ == '__main__':
 
     m = GPy.models.GPRegression(X, Y)
     m.plot()
+
+    ratings_user = pd.merge(ratings, users, how="left")
+    ratings_user.set_index("movie_id", inplace=True)
+
+    movie_index = 5
+
+    ratings_user[["gender", "age", "rating"]].loc[movie_index]
+
