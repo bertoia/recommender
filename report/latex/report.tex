@@ -65,12 +65,21 @@ We assume that our data $\mathcal{D} = \{(x_1, y_1), \ldots, (x_i, y_i)\}$ are s
 
 Given $\textbf{y} = [y_1y_2\ldots y_i]^\top$, suppose we have a new input $\textbf{x}_*$ for which we would like to obtain a prediction for. In other words, we would like to infer $p(f_* \mid \textbf{y})$. Then, the predictive mean and variance from the GP can be given by:
 \begin{align*}
-	E[f_* \mid \textbf{y}] = \mu(\textbf{x}_*) + \textbf{k}_*^\top (\textbf{K} + \sigma_n^2 \textbf{I})^{-1} (\textbf{y} - \boldsymbol{\mu}) \\
-	V[f_* \mid y] = k(\textbf{x}_*, \textbf{x}_*) - \textbf{k}_*^\top (\textbf{K} + \sigma_n^2 \textbf{I})^{-1} \textbf{k}_* \\
+	&E[f_* \mid \textbf{y}] = \mu(\textbf{x}_*) + \textbf{k}_*^\top (\textbf{K} + \sigma_n^2 \textbf{I})^{-1} (\textbf{y} - \boldsymbol{\mu}) \\
+	&V[f_* \mid y] = k(\textbf{x}_*, \textbf{x}_*) - \textbf{k}_*^\top (\textbf{K} + \sigma_n^2 \textbf{I})^{-1} \textbf{k}_* \\
 \end{align*}
 
+
 \subsection{Choosing Model Parameters}
-We threw a die
+The GP function is mainly characterized by its covariance function after normalizing the data to attain a mean of 0.
+Our choice of kernel for both experimental models, per user and per movie, was the radial basis function(RBF) kernel
+\begin{align*}
+	\textbf{K} (\textbf{x},\textbf{x}') = \sigma^2\exp(-\frac{1}{2}\sum_{i=1}^{d}
+	\frac{(x_{i} - x_{i}')^{2}}{\ell_{i}^{2}})
+\end{align*} 
+where the hyperparameters $\sigma^{2}$ is the variance, $\ell $ is the lengthscale, d is the dimension of the input vector $ x_{i}. $
+
+The choice of the rbf kernel was due to its ability to produce similar predictive ratings for two inputs with similar features based on their distance. If two users have contrasting preferences, it is highly unlikely that both will assign the same rating to their opposing's favorite movie.
 
 \section{Experimental Setup}
 \subsection{Dataset}
