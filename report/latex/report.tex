@@ -35,15 +35,15 @@ The rise of on-demand video services requires an accurate movie recommendation s
 \section{Motivating Application}
 Moreover, motivating reasons such as word of the mouth, reviews and advertising are insufficient in the context of digitized movies. To cater to the consumer who faces the paradox of choice, there is a need for quality recommender systems which can enable movie watchers to discover movies they love on their own.
 
-Suppose a Gaussian process model can generate accurate predictive means of user ratings for a particular movie. We can then provide a good selection of recommended movies based on predicted ratings. This selection can be made on the basis of the predictive uncertainty that the Gaussian process model usefully provides. For example, we might obtain similarly high ratings for 2 movies, A and B. If the predictive uncertainty given by the Gaussian process model is such that $\sigma_A^2 > \sigma_B^2$, then we are more likely to recommend movie B, or rank it higher on our recommendation list. Alternatively, it is possible to use multiple models and weight our predictions inversely proportional to the variance. As a consequence, users will benefit by deriving greater enjoyment.
+Our application firstly exploits the predictive mean and uncertainty provided by the Gaussian process model. In particular, it is important for our application to obtain a ranking of movie that we should recommend. The Gaussian process model is particularly well-suited in this context as compared to traditional regression models. This is because our selection can be made on the basis of the predictive uncertainty that the Gaussian process model usefully provides. For example, we might obtain similarly high ratings for 2 movies, A and B. If the predictive uncertainty given by the Gaussian process model is such that $\sigma_A^2 > \sigma_B^2$, then we are more likely to recommend movie B, or rank it higher on our recommendation list. Additionally, it is possible to use multiple models and weight our predictions inversely proportional to the variance. As a consequence, users will benefit by deriving greater enjoyment.
 
-With increased user satisfaction and hence higher utilisation of the system, we are also likely to obtain even more data from new ratings. This will allow us to further exploit the correlations among user preferences, as well as the Bayesian nature of Gaussian process models by updating the model with new data.
+Moreover, movie preference is highly personal and complex to model. Director, script, cast, score, visual effects and genres are just of some obvious features of a movie. To give a trivial example, an individual might not like mainstream A-listers action movies such as Fast \& Furious, Bourne or James Bond, but he may like Marvel action movies because he likes superhero comics. Even then, he might not like the newer Spiderman movies because of the main lead. He might love DC Comic Batman trilogy directed by Christopher Nolan but still be disappointed by Batman v Superman: Dawn of Justice. The usage of Gaussian process models in this context is particularly helpful in enabling us to exploit the correlations between users with similar preferences. Since users with similar tastes are likely to give similar ratings to a specific movie, we can make use of these correlations to recommend movies.
 
-Moreover, movie preference is highly personal and complex to model. Director, script, cast, score, visual effects and genres are just of some obvious features of a movie. To give a trivial example, an individual might not like mainstream A-listers action movies such as Fast \& Furious, Bourne or James Bond, but he may like Marvel action movies because he likes superhero comics. Even then, he might not like the newer Spiderman movies because of the main lead. He might love DC Comic Batman trilogy directed by Christopher Nolan but still be disappointed by Batman v Superman: Dawn of Justice.
+It is clear that modelling human behaviour and preference is complex. Using a parametric model could unintentionally constrain our model. Since the Gaussian process model is a distribution over an infinite number of functions, we are better able to model the full spectrum of highly variable human preferences by exploiting the non-parametric characteristic of Gaussian processes.
 
-It is clear that modelling human behaviour and preference is complex. Using a parametric model could unintentionally constrain our model. Since the GP model is a distribution over an infinite number of functions, its non-parametric attribute allows us to better model the full spectrum of highly variable human preferences.
+Finally, let us suppose that our Gaussian process model can generate relatively accurate recommendations. With increased user satisfaction and hence higher utilisation of the system, we are likely to obtain even more data from new ratings. This will allow us to further exploit the correlations among user preferences, as well as the Bayesian nature of Gaussian process models by updating the model with new data.
 
-To tackle this problem, we propose a movie recommender system based on the Gaussian Process (GP) model. Given a list of movies that an individual has not rated before, we can use GP to compute a predictive mean rating that the individual is likely to give and a predictive uncertainty which gives us insight on how accurate our prediction is.
+In conclusion, to tackle the problem of movie recommendation, we propose a Gaussian process (GP) model. Given a list of movies that an individual has not rated before, a GP model will compute a predictive mean rating that the individual is likely to give and a predictive uncertainty which gives us insight on how accurate our prediction is. These can then be made use of to generate movie recommendations.
 
 \section{Technical Approach}
 A Gaussian process is a collection of random variables, any finite subset of which have a multivariate Gaussian distribution. It is completely specified by a mean function $\mu(\textbf{x})$ and the covariance function $k(\textbf{x}, \textbf{x}')$. For a real process $f(\textbf{x})$:
@@ -69,7 +69,30 @@ Given $\textbf{y} = [y_1y_2\ldots y_i]^\top$, suppose we have a new input $\text
 	&V[f_* \mid y] = k(\textbf{x}_*, \textbf{x}_*) - \textbf{k}_*^\top (\textbf{K} + \sigma_n^2 \textbf{I})^{-1} \textbf{k}_* \\
 \end{align*}
 
+\subsection{Problem Definition}
+Traditionally, there are 2 approaches to implementing recommender systems:
 
+\begin{enumerate}
+	\item Content-based systems make recommendations based on item attributes. For example, a user who tends to watch many movies of the horror genre will be recommended a movie from that genre.
+	\item Collaborative filtering systems analyse the similarities between users and/or items to make recommendations. Users will be recommended items that are preferred by users with similar tastes.
+\end{enumerate}
+
+The task is thus rating prediction, given item and user attributes. In particular, suppose we are given a set of movies, $\mathcal{M}$, and a set of users, $\mathcal{U}$. We formulate an input matrix $X$ based on 2 types of models, per-user and per-movie, to predict user ratings $y = [y_1, y_2, \ldots, y_n]^\top$, where X is given by
+
+\begin{align*}
+	X = \begin{bmatrix}
+	x_1(1) & x_2(1) & \cdots & x_d(1)\\
+	\vdots & & \ddots & \vdots \\
+	x_1(N) & x_2(N) & \cdots & x_d(N) \\
+	\end{bmatrix}
+\end{align*}
+\subsection{Model Definition}
+In this paper, we assume that user ratings follow a Gaussian distribution. We formulate two different types of models:
+
+\begin{enumerate}
+	\item \textbf{Per-user:} The per-user model can be viewed as follows -- imagine the entire universe of movies, $\mathcal{M}$ -- the known ratings by this particular user consist of a subset of movies, $\mathcal{M}_i$. By utilising the item profiles of these $\vert \mathcal{M}_i \vert$ movies, the Gaussian process predicts the ratings for the unknown subset of movies, $\mathcal{M}_u$, where $\mathcal{M}_i \cup \mathcal{M}_u = \mathcal{M}$.
+	\item \textbf{Per-movie:} The per-movie can be viewed using a similar analogy, but flipping the roles of users and items. Given the user profiles of all known user ratings for a specific movie, we predict the ratings that the remaining users are likely to give, based on the correlations between the user profiles.
+\end{enumerate}
 \subsection{Choosing Model Parameters}
 The GP function is mainly characterized by its covariance function after normalizing the data to attain a mean of 0.
 Our choice of kernel for both experimental models, per user and per movie, was the radial basis function(RBF) kernel
@@ -93,11 +116,27 @@ Our primary dataset is the MovieLens 1M Dataset which is a stable benchmark data
 
 We also utilised user demographic information such as age, gender and occupation available from the dataset.
 
-To supplement this dataset, we combined it with the MovieLens+IMDb/Rotten Tomatoes Dataset released by HetRec 2011. Our motivation for doing so was to obtain movie critic ratings from Rotten Tomatoes. As the project progressed, we also extracted the relevant directors and actors for feature engineering purposes.
+To supplement this dataset, we combined it with the MovieLens+IMDb/Rotten Tomatoes Dataset released by HetRec 2011. Our motivation for doing so was to obtain movie critic ratings from Rotten Tomatoes. As the project progressed, we also extracted the relevant directors and actors for feature engineering purposes. The notable features extracted from this dataset include:
 
-\subsection{Preprocessing}
+\begin{description}
+	\item[rtAllCriticsRating] average critics' rating for the movie
+	\item[rtAudienceRating] average audience rating for the movie
+	\item[rtCriticsNumRatings] number of critics' ratings for the movie
+	\item[rtAudienceNumRatings] number of audience ratings for the movie
+\end{description}
+
+\subsection{Procedure}
+
+In our experiment, the ratings and movie data were merged together to produce a dataset with both numerical and categorical features. We built a simple model based solely on numerical features before adding new features as well as experimenting with different kernels. In order to test the performance of our models, the data was also split randomly into train and test sets\footnote{A 70-30 split was used.}.
+
+The basic model consists of the following features: user age, user gender, movie release year, critics and audience rating from Rotten Tomatoes.
 
 \subsection{Feature Engineering}
+From our dataset, we were only able to obtain 3 demographic features: age, gender and occupation. However, the movie dataset contains a much richer set of features, including title and genres. We were also able to obtain the directors and actors by merging the original dataset with the supplementary dataset from HetRec. To utilise these features so that we could input them into the Gaussian process, we had to first transform them into numerical features.
+
+One approach to encode genre was to use one-hot encoding. To achieve this, we created new columns for each of the genres. For each movie, the value is 1 if the move belongs to that particular genre, 0 otherwise.
+
+Additionally, we utilised word2vec as an alternative to transforming the remaining text data into useful numerical features. Word2vec enables us to create word embeddings, or vector representations of words with a given corpus. Similar words are constructed such that they are close to each other within the vector space.
 
 \section{Experimental Evaluation}
 We have discovered truly remarkable results which this margin is too small to contain
