@@ -131,13 +131,16 @@ In our experiment, the ratings and movie data were merged together to produce a 
 
 The basic model consists of the following features: user age, user gender, movie release year, critics and audience rating from Rotten Tomatoes.
 
+Two advanced models are also proposed to include genres of a movie into the feature set. Howver, to do so, we have to preprocess the genre information into numerical values.
+
 \subsection{Feature Engineering}
 From our dataset, we were only able to obtain 3 demographic features: age, gender and occupation. However, the movie dataset contains a much richer set of features, including title and genres. We were also able to obtain the directors and actors by merging the original dataset with the supplementary dataset from HetRec. To utilise these features so that we could input them into the Gaussian process, we had to first transform them into numerical features.
 
-One approach to encode genre was to use one-hot encoding. To achieve this, we created new columns for each of the genres. For each movie, the value is 1 if the move belongs to that particular genre, 0 otherwise.
+One approach to encode genre was to use one-hot encoding. To achieve this, we created new columns for each of the genres. For each movie, the value is 1 if the movie belongs to that particular genre, 0 otherwise.
 
 Additionally, we utilised word2vec as an alternative to transforming the remaining text data into useful numerical features. Word2vec enables us to create word embeddings, or vector representations of words with a given corpus. Similar words are constructed such that they are close to each other within the vector space.
 
+Another way is to group genres into buckets and compute a probability for the genres of a movie given the buckets. Choosing from the top popular genres, we identify 9 buckets: drama, comedy, crime, action, thriller, horror, fantasy, family and animation. This probabilistic approach allows us to compare the distance between genres and buckets. It also reduces the dimension of the input vector significantly.
 \section{Experimental Evaluation}
 We have discovered truly remarkable results which this margin is too small to contain
 
