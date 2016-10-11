@@ -7,6 +7,7 @@
 \usepackage{courier}
 \usepackage{amsmath}
 \usepackage{amsfonts}
+\usepackage{multirow}
 \frenchspacing
 \setlength{\pdfpagewidth}{8.5in}
 \setlength{\pdfpageheight}{11in}
@@ -94,7 +95,7 @@ In this paper, we assume that user ratings follow a Gaussian distribution. We fo
 	\item \textbf{Per-movie:} The per-movie can be viewed using a similar analogy, but flipping the roles of users and items. Given the user profiles of all known user ratings for a specific movie, we predict the ratings that the remaining users are likely to give, based on the correlations between the user profiles.
 \end{enumerate}
 \subsection{Choosing Model Parameters}
-The GP function is mainly characterized by its covariance function after normalizing the data to attain a mean of 0.
+The GP function is mainly characterized by its covariance function after normalizing the data to attain a mean of 0. The covariance function produces a covariance matrix which is utilised by the Gaussian process model for inference.
 Our choice of kernel for both experimental models, per user and per movie, was the radial basis function(RBF) kernel
 \begin{align*}
 	\textbf{K} (\textbf{x},\textbf{x}') = \sigma^2\exp(-\frac{1}{2}\sum_{i=1}^{d}
@@ -131,18 +132,56 @@ In our experiment, the ratings and movie data were merged together to produce a 
 
 The basic model consists of the following features: user age, user gender, movie release year, critics and audience rating from Rotten Tomatoes.
 
-Two advanced models are also proposed to include genres of a movie into the feature set. Howver, to do so, we have to preprocess the genre information into numerical values.
+Two advanced models are also proposed to include genres of a movie into the feature set. However, to do so, we have to preprocess the genre information into numerical values.
 
 \subsection{Feature Engineering}
-From our dataset, we were only able to obtain 3 demographic features: age, gender and occupation. However, the movie dataset contains a much richer set of features, including title and genres. We were also able to obtain the directors and actors by merging the original dataset with the supplementary dataset from HetRec. To utilise these features so that we could input them into the Gaussian process, we had to first transform them into numerical features.
+From our dataset, we were only able to obtain 3 demographic features: age, gender and occupation. However, the movie dataset contains a much richer set of features, including title and genres. We were also able to obtain the directors and actors by merging the original dataset with the supplementary dataset from HetRec. To utilise these features so that we could input them into the Gaussian process, we first transform them into numerical features.
 
-One approach to encode genre was to use one-hot encoding. To achieve this, we created new columns for each of the genres. For each movie, the value is 1 if the movie belongs to that particular genre, 0 otherwise.
+One approach to encode genre was to use one-hot encoding.
+To achieve this, we created new columns for each of the genres.
+For each movie, the value is 1 if the movie belongs to that particular genre, 0 otherwise.
+However, since there are 20 movie genres in total, we sought to reduce the number of dimensions for the input matrix.
 
-Additionally, we utilised word2vec as an alternative to transforming the remaining text data into useful numerical features. Word2vec enables us to create word embeddings, or vector representations of words with a given corpus. Similar words are constructed such that they are close to each other within the vector space.
+Through the use of Word2vec, we could transform the remaining text data into useful numerical features and reduce the dimensions of the input.
+Word2vec enables us to create word embeddings, or vector representations of words with a given corpus.
+Similar words are constructed such that they are close to each other within the vector space.
+We thus extracted the textual data from our datasets and processed them into a corpus suitable for training a Word2vec model on.
+The Word2vec model is then queried for vectors, $x = [x_1, \cdots, x_k]^\top$ representing each film.
+Additionally, we were able to obtain vectors representing each distinct genre present in the dataset.
+In training the model, it was found that a value of $k=8$ produced reasonable results from a test of similarity between selected films and genres.
+The following table gives some of the cosine similarites between genre vectors most similar to each other:
+
+\begin{center}
+	\begin{tabular}{llc}
+		Genre & Genre most similar to & Similarity\\
+		\hline
+		Drama & Crime & 0.9132 \\
+		Thriller & Mystery & 0.9834 \\
+		Animation & Children & 0.9621 \\
+		Sci-fi & Fantasy & 0.8729 \\
+	\end{tabular}
+\end{center}
 
 Another way is to group genres into buckets and compute a probability for the genres of a movie given the buckets. Choosing from the top popular genres, we identify 9 buckets: drama, comedy, crime, action, thriller, horror, fantasy, family and animation. This probabilistic approach allows us to compare the distance between genres and buckets. It also reduces the dimension of the input vector significantly.
+
 \section{Experimental Evaluation}
-We have discovered truly remarkable results which this margin is too small to contain
+As mentioned, our approach involves taking two main perspectives on the data, per-user and per-movie.
+We thus train a GP model for each user and each movie using the processed data.
+The Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE) for the models trained are given as follows:
+
+\begin{center}
+	\begin{tabular}{lllll}
+		Type & Features & Kernel & MAE & RMSE \\
+		\hline
+		\multirow{2}{*}{Per-Movie} & Basic & RBF & 0.7823 & 0.9785\\
+		& Basic & Cosine & 0.7823 & 0.9786 \\
+		\hline
+		\multirow{4}{*}{Per-User} & Basic & \multirow{4}{*}{RBF} & 0.8128 & 1.019 \\
+		& Word2vec Genres & & 0.8210 & 1.026 \\
+		& Probabilistic   & & 0.8204 & 1.027 \\
+		& Word2vec Movies & & 0.8278 & 1.033 \\
+	\end{tabular}
+\end{center}
 
 \section{References}
 Note: max 6 pages
