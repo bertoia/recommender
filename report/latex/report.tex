@@ -88,12 +88,18 @@ The task is thus rating prediction, given item and user attributes. In particula
 	\end{bmatrix}
 \end{align*}
 \subsection{Model Definition}
-In this paper, we assume that user ratings follow a Gaussian distribution. We formulate two different types of models:
+In this paper, we assume that user ratings follow a Gaussian distribution. We formulate two different types of models, each exploiting a different set of features:
 
 \begin{enumerate}
-	\item \textbf{Per-user:} The per-user model can be viewed as follows -- imagine the entire universe of movies, $\mathcal{M}$ -- the known ratings by this particular user consist of a subset of movies, $\mathcal{M}_i$. By utilising the item profiles of these $\vert \mathcal{M}_i \vert$ movies, the Gaussian process predicts the ratings for the unknown subset of movies, $\mathcal{M}_u$, where $\mathcal{M}_i \cup \mathcal{M}_u = \mathcal{M}$.
-	\item \textbf{Per-movie:} The per-movie can be viewed using a similar analogy, but flipping the roles of users and items. Given the user profiles of all known user ratings for a specific movie, we predict the ratings that the remaining users are likely to give, based on the correlations between the user profiles.
+	\item \textbf{Per-user:} The per-user model can be viewed as follows -- imagine the entire universe of movies, $\mathcal{M}$ -- the known ratings by this particular user consist of a subset of movies, $\mathcal{M}_i$. By utilising the item profiles of these $\vert \mathcal{M}_i \vert$ movies, the Gaussian process predicts the ratings for the unknown subset of movies, $\mathcal{M}_u$, where $\mathcal{M}_i \cup \mathcal{M}_u = \mathcal{M}$. The item profile consists of movie attributes such as year of release and average critic's rating.
+	\item \textbf{Per-movie:} The per-movie can be viewed using a similar analogy, but flipping the roles of users and items. Given the user profiles of all known user ratings for a specific movie, we predict the ratings that the remaining users are likely to give, based on the correlations between the user profiles. The user profile consists of user attributes such as age and gender.
 \end{enumerate}
+
+Here is an example of how a prediction is made from these two models. Suppose Steve is a user in the system and he has provided ratings for a few movies. From these ratings provided by Steve, we train a per-user model for Steve. In addition we provide these ratings to their respective per-movie model so as to further train the models. One movie that Steve has not rated is Jurassic Park and we are interested in predicting his rating for that movie. To do so, we first provide Steve's per-user gp model features from the movie Jurassic Park (1993, Action and Thriller) which then returns a prediction for the rating. Likewise, we provide the Jurassic Park's per movie-model with Steve's features (age, gender) and obtain another prediction for the rating. Finally, we take a weighted average of the prediction to obtain the final prediction. The approach for the weighted average will be explained under experimental evaluation.
+
+The reason for having these two models is so that we can exploit both personal and demographic preferences. The per-user model tells us a user's personal preference for certain movie features such as genre or year of release whearas the per-movie model tells us demographic preferences for a particular movie. Another advantage of having the prediction provide by two models is that we can still make reasonable predictions when data is sparse. A new user would not provide many ratings on the system but we can give more weights to the per-movie model's prediction. Likewise for a new movie, we give more weights to the per-user model's prediction.
+
+
 \subsection{Choosing Model Parameters}
 The GP function is mainly characterized by its covariance function after normalizing the data to attain a mean of 0. The covariance function produces a covariance matrix which is utilised by the Gaussian process model for inference.
 Our choice of kernel for both experimental models, per user and per movie, was the radial basis function(RBF) kernel
@@ -107,7 +113,9 @@ The choice of the rbf kernel was due to its ability to produce similar predictiv
 
 \section{Experimental Setup}
 \subsection{Dataset}
-Our primary dataset is the MovieLens 1M Dataset which is a stable benchmark dataset widely used for evaluating recommender systems. The primary dataset contains around 1,000,000 anonymous ratings of approximately 3,900 movies made by 6,040 MovieLens users who joined MovieLens\footnote{MovieLens is a movie recommender system created by GroupLens Research.} in 2000. Besides ratings, the following attributes were extracted from this dataset:
+Our primary dataset is the MovieLens\footnote{MovieLens is a movie recommender system created by GroupLens Research.}  1M Dataset which is a stable benchmark dataset widely used for evaluating recommender systems. The Dataset consists of three files, namely "ratings.dat", "movie.dat" and "user.dat" which contains around 1,000,000 ratings of approximately 3,900 movies made by 6,040 MovieLens users who joined MovieLens in 2000. Each rating is accompanied by a movie\_id and a user\_id so that we can map the rating to the respective user and movie.
+
+Besides ratings, the dataset also provides movie attributes. The following attributes were extracted from "movie.dat":
 
 \begin{description}
 	\item[movie\_id] movie identification number
@@ -115,32 +123,44 @@ Our primary dataset is the MovieLens 1M Dataset which is a stable benchmark data
 	\item[genres] a list of genres that the movie belongs to
 \end{description}
 
-We also utilised user demographic information such as age, gender and occupation available from the dataset.
+We also utilised user demographic information such as age, gender and occupation available from "user.dat":
+
+\begin{description}
+	\item[user\_id] user identification number
+	\item[gender] user's gender
+	\item[age] user's age
+	\item[occupation] user's occupation
+\end{description}
 
 To supplement this dataset, we combined it with the MovieLens+IMDb/Rotten Tomatoes Dataset released by HetRec 2011. Our motivation for doing so was to obtain movie critic ratings from Rotten Tomatoes. As the project progressed, we also extracted the relevant directors and actors for feature engineering purposes. The notable features extracted from this dataset include:
 
 \begin{description}
-	\item[rtAllCriticsRating] average critics' rating for the movie
-	\item[rtAudienceRating] average audience rating for the movie
-	\item[rtCriticsNumRatings] number of critics' ratings for the movie
-	\item[rtAudienceNumRatings] number of audience ratings for the movie
+	\item[AllCriticsRating] average critics' rating for the movie
+	\item[AudienceRating] average audience rating for the movie
+	\item[CriticsNumRatings] number of critics' ratings for the movie
+	\item[AudienceNumRatings] number of audience ratings for the movie
 \end{description}
+
+By combining all these datasets, we obtained a processed dataset consisting of user ratings augmented with user attributes and movie attributes.
 
 \subsection{Procedure}
 
-In our experiment, the ratings and movie data were merged together to produce a dataset with both numerical and categorical features. We built a simple model based solely on numerical features before adding new features as well as experimenting with different kernels. In order to test the performance of our models, the data was also split randomly into train and test sets\footnote{A 70-30 split was used.}.
+The pre-processed dataset contains both numerical and categorical features. We experimented on simple models based solely on numerical features as well as models that utilizes categorical features. We also experimented with different kernels such as the linear kernel and cosine kernel in addition to the RBF kernel.  In order to test the performance of our models, the data was split using stratified sampling into train and test sets\footnote{A 70-30 split was used. Stratification was done over the user id}.
 
-The basic model consists of the following features: user age, user gender, movie release year, critics and audience rating from Rotten Tomatoes.
+The per-movie model uses of the following numeric features: user age, user gender\footnote{Encoded as Female: 0 Male: 1} .
 
-Two advanced models are also proposed to include genres of a movie into the feature set. However, to do so, we have to preprocess the genre information into numerical values.
+The basic per-user model uses of the following numeric features: year of movie release, average critics and audience rating, number of critics and audience rating.
+
+In the next section, we shall explain the different approaches taken to integrate non-numeric features into the models.
 
 \subsection{Feature Engineering}
-From our dataset, we were only able to obtain 3 demographic features: age, gender and occupation. However, the movie dataset contains a much richer set of features, including title and genres. We were also able to obtain the directors and actors by merging the original dataset with the supplementary dataset from HetRec. To utilise these features so that we could input them into the Gaussian process, we first transform them into numerical features.
+From our dataset, we were only able to obtain 3 demographic features: age, gender and occupation. However, the dataset contains a much richer set of features, including title and genres. We were also able to obtain the directors and actors by merging the original dataset with the supplementary dataset from HetRec. To utilise these non-numeric features so that we could input them into the Gaussian process, we have to first transform them into numerical features.
 
-One approach to encode genre was to use one-hot encoding.
-To achieve this, we created new columns for each of the genres.
+One approach was to use one-hot encoding over the categorical features.
+We attempted this on the genre feature where a column is created for each of the genres.
 For each movie, the value is 1 if the movie belongs to that particular genre, 0 otherwise.
-However, since there are 20 movie genres in total, we sought to reduce the number of dimensions for the input matrix.
+However, this technique does not scale very well as the input dimension increases with the number of categorical classes.
+Since there are 20 movie genres in total, we sought to reduce the number of dimensions for the input matrix.
 
 Through the use of Word2vec, we could transform the remaining text data into useful numerical features and reduce the dimensions of the input.
 Word2vec enables us to create word embeddings, or vector representations of words with a given corpus.
@@ -165,24 +185,39 @@ The following table gives some of the cosine similarites between genre vectors m
 Another way is to group genres into buckets and compute a probability for the genres of a movie given the buckets. Choosing from the top popular genres, we identify 9 buckets: drama, comedy, crime, action, thriller, horror, fantasy, family and animation. This probabilistic approach allows us to compare the distance between genres and buckets. It also reduces the dimension of the input vector significantly.
 
 \section{Experimental Evaluation}
-As mentioned, our approach involves taking two main perspectives on the data, per-user and per-movie.
-We thus train a GP model for each user and each movie using the processed data.
+As mentioned, our approach involves combining the predictions from the per-user and per-movie models.
+We thus train a GP model for each of the 6,040 users and each of the 3,090 movies using the processed data.
+The number of ratings per user ranges from 18 to 2264 with a median of 94. The number of ratings per movie ranges from 1 to 3428 with a median of 135.
+Given that the maximum training samples per GP model is only in the thousands, there was no need to use any techniques for handling large datasets in GP model.
+
+Evaluating the accuracy of the models is slightly more involved as we have to feed the right entry to the right model.
+Suppose we want to evaluate the accuracy of the per-user models using the test set. For each entry on the test set,
+we pass the entry to the per-user model that matches the entry's user\_id and obtain the prediction for that entry.
+We do this for every entry on the test set and that gives us the full prediction for the test set. Likewise for per-movie models.
+
+As mentioned, we experimented with various combinations of features and kernels. Below is a subset of the experimental results\footnote{Full result is provided in the appendix} for the different combinations:
 The Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE) for the models trained are given as follows:
 
 \begin{center}
 	\begin{tabular}{lllll}
 		Type & Features & Kernel & MAE & RMSE \\
 		\hline
-		\multirow{2}{*}{Per-Movie} & Basic & RBF & 0.7823 & 0.9785\\
-		& Basic & Cosine & 0.7823 & 0.9786 \\
+		\multirow{3}{*}{Per-Movie}\\
+		& Numeric & RBF & 0.7823 & 0.9785\\
+		& Numeric & Cosine & 0.7823 & 0.9786 \\
+		& Numeric & Linear & 0.7823 & 0.9786 \\
 		\hline
-		\multirow{4}{*}{Per-User} & Basic & \multirow{4}{*}{RBF} & 0.8128 & 1.019 \\
+		\multirow{4}{*}{Per-User} & Numeric & \multirow{4}{*}{RBF} & 0.8128 & 1.019 \\
 		& Word2vec Genres & & 0.8210 & 1.026 \\
 		& Probabilistic   & & 0.8204 & 1.027 \\
 		& Word2vec Movies & & 0.8278 & 1.033 \\
 	\end{tabular}
 \end{center}
+We observed that when predicting with just per-movie or per-user models by themselves, per-movie models out performs per-user models.
+This could be due to per-movie models having more training points on average.
+\subsection{Combining the models}
 
+Inverse-Variance Weighting
 \section{References}
 Note: max 6 pages
 
