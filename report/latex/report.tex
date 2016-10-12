@@ -65,6 +65,7 @@ We assume that our data $\mathcal{D} = \{(x_1, y_1), \ldots, (x_i, y_i)\}$ are s
 \end{align*}
 
 Given $\textbf{y} = [y_1y_2\ldots y_i]^\top$, suppose we have a new input $\textbf{x}_*$ for which we would like to obtain a prediction for. In other words, we would like to infer $p(f_* \mid \textbf{y})$. Then, the predictive mean and variance from the GP can be given by:
+
 \begin{align*}
 	&E[f_* \mid \textbf{y}] = \mu(\textbf{x}_*) + \textbf{k}_*^\top (\textbf{K} + \sigma_n^2 \textbf{I})^{-1} (\textbf{y} - \boldsymbol{\mu}) \\
 	&V[f_* \mid y] = k(\textbf{x}_*, \textbf{x}_*) - \textbf{k}_*^\top (\textbf{K} + \sigma_n^2 \textbf{I})^{-1} \textbf{k}_* \\
@@ -115,13 +116,15 @@ The choice of the rbf kernel was due to its ability to produce similar predictiv
 \textbf{Lemma}: The product of two Gaussians gives another (un-normalized) Gaussian.
 
 The log marginal likelihood of the gaussian process can be computed by marginalizing the likelihood with respect to function \textbf{f} and by using the lemma we obtain 
+
 \begin{align*}
 \text{log }p(\mathbf{y}|X,\theta) = 
 &-\frac{1}{2}\mathbf{y}^{T}(K+\sigma^{2}_{n}I)^{-1}\mathbf{y}
 -\frac{1}{2}\text{log } |K+\sigma^{2}_{n}I| \\
 &-\frac{n}{2}\text{log }2\pi
 \end{align*}
-where the $\theta = \{\ell,\sigma^{2}_{n},...\}$ are the hyper-parameters which can be tuned by Markov Chain Monte Carlo methods or through Bayesian Optimisation (Neal 1997; Sundararajan and Keerthi 2001). Learning the hyperparameters is possible as the log likelihood partial derived, letting $\mathcal{Q}$ to be 
+
+where the $\theta = \{\ell,\sigma^{2}_{n},...\}$ are the hyper-parameters which can be tuned by Markov Chain Monte Carlo methods or through Bayesian Optimisation (Neal 1997; Sundararajan and Keerthi 2001). Learning the hyperparameters is possible as the log likelihood partial can be derived. Letting $\mathcal{Q}$ to be 
 $K + \sigma^{2}_{n}I$, 
 
 \begin{align*}
