@@ -111,6 +111,32 @@ where the hyperparameters $\sigma^{2}$ is the variance, $\ell $ is the lengthsca
 
 The choice of the rbf kernel was due to its ability to produce similar predictive ratings for two inputs with similar features based on their distance. If two users have contrasting preferences, it is highly unlikely that both will assign the same rating to their opposing's favorite movie.
 
+\subsection{Learning the hyper-parameters}
+\textbf{Lemma}: The product of two Gaussians gives another (un-normalized) Gaussian.
+
+The log marginal likelihood of the gaussian process can be computed by marginalizing the likelihood with respect to function \textbf{f} and by using the lemma we obtain 
+\begin{align*}
+\text{log }p(\mathbf{y}|X,\theta) = 
+&-\frac{1}{2}\mathbf{y}^{T}(K+\sigma^{2}_{n}I)^{-1}\mathbf{y}
+-\frac{1}{2}\text{log } |K+\sigma^{2}_{n}I| \\
+&-\frac{n}{2}\text{log }2\pi
+\end{align*}
+where the $\theta = \{\ell,\sigma^{2}_{n},...\}$ are the hyper-parameters which can be tuned by Markov Chain Monte Carlo methods or through Bayesian Optimisation (Neal 1997; Sundararajan and Keerthi 2001). Learning the hyperparameters is possible as the log likelihood partial derived, letting $\mathcal{Q}$ to be 
+$K + \sigma^{2}_{n}I$, 
+
+\begin{align*}
+\frac{\partial}{\partial\theta}\text{log }p(\mathbf{y}|X,\theta) = -
+\frac{1}{2}\text{tr}(\mathcal{Q}^{-1}
+\frac{\partial\mathcal{Q}}{\partial\theta_{i}}) +
+\frac{1}{2}\mathbf{y}^T\mathcal{Q}^{-1}
+\frac{\partial\mathcal{Q}}{\partial\theta_{i}}
+\mathcal{Q}^{-1}\mathbf{y}
+\end{align*}
+
+We used a python library GPy to optimize our per user and per movie models which implements the bayesian optimization framework for maximizing the likelihood function. Through the batch gradient descent method, the maximum aposteriori(MAP) estimation gives us the maximum likelihood(Rasmussen, 1997). 
+
+This feedback to us critical information on the which are the important features in the per-user model through the Automatic Relevance Determination(ARD) represented by the lengthscale $\ell$. Suppose $\ell$ is short for the per user model input vector dimension "genre", then this suggests that "genre" is an important feature for predicting the rating.
+
 \section{Experimental Setup}
 \subsection{Dataset}
 Our primary dataset is the MovieLens\footnote{MovieLens is a movie recommender system created by GroupLens Research.}  1M Dataset which is a stable benchmark dataset widely used for evaluating recommender systems. The Dataset consists of three files, namely "ratings.dat", "movie.dat" and "user.dat" which contains around 1,000,000 ratings of approximately 3,900 movies made by 6,040 MovieLens users who joined MovieLens in 2000. Each rating is accompanied by a movie\_id and a user\_id so that we can map the rating to the respective user and movie.
