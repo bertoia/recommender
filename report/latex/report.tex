@@ -149,7 +149,7 @@ We thus extracted the textual data from our datasets and processed them into a c
 The Word2vec model is then queried for vectors, $x = [x_1, \cdots, x_k]^\top$ representing each film.
 Additionally, we were able to obtain vectors representing each distinct genre present in the dataset.
 In training the model, it was found that a value of $k=8$ produced reasonable results from a test of similarity between selected films and genres.
-The following table gives some of the cosine similarites between genre vectors most similar to each other:
+The following table gives some of the cosine similarities between genre vectors most similar to each other:
 
 \begin{center}
 	\begin{tabular}{llc}
@@ -162,7 +162,26 @@ The following table gives some of the cosine similarites between genre vectors m
 	\end{tabular}
 \end{center}
 
-Another way is to group genres into buckets and compute a probability for the genres of a movie given the buckets. Choosing from the top popular genres, we identify 9 buckets: drama, comedy, crime, action, thriller, horror, fantasy, family and animation. This probabilistic approach allows us to compare the distance between genres and buckets. It also reduces the dimension of the input vector significantly.
+Another approach to reduce the number of dimensions is to select several genres as "buckets" and calculate the probability of a movie's genres given a bucket.
+This probability gives the intuition of how similar two genres are.
+For example, if a movie has the following 3 genres, adventure, animation, family, and the given bucket is comedy, we calculate the numerical feature as follows:
+
+\begin{align*}
+    &P(adventure, animation, family \mid comedy)\\
+    &= \max \begin{Bmatrix} P(adventure \mid comedy)
+    \\P(animation \mid comedy) 
+    \\P(family \mid comedy)
+    \end{Bmatrix}
+\end{align*}
+
+Since the conditional independence assumption does not necessarily hold, we instead take the max of the individual probabilities. 
+The individual probabilities are calculated based on their various counts in the training set. 
+In addition, the probabilities are smoothed using Witten-Bell smoothing to ensure non-zero probabilities.
+
+$$ P(animation \mid comedy) = \frac{C(animation, comedy)}{C(comedy)} $$
+
+Choosing from the top popular genres (based on their counts), we identify 9 buckets: drama, comedy, crime, action, thriller, horror, fantasy, family and animation.
+This probabilistic approach allows us to compare the distance between genres and buckets. It also reduces the dimension of the input vector significantly.
 
 \section{Experimental Evaluation}
 As mentioned, our approach involves taking two main perspectives on the data, per-user and per-movie.
