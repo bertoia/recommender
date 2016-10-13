@@ -51,7 +51,7 @@ The director, cast, visual effects and genres are just of some of the most promi
 To give a trivial example, an individual might not like mainstream A-listers action movies such as Fast \& Furious, Bourne or James Bond, but he may like Marvel action movies because he likes superhero comics.
 Even then, he might not like the newer Spiderman movies because of the main lead. He might love DC Comic Batman trilogy directed by Christopher Nolan but still be disappointed by Batman v Superman: Dawn of Justice.
 The usage of Gaussian process models in this context is particularly helpful in enabling us to exploit the correlations between users with similar preferences.
-Since users with similar tastes are likely to give similar ratings to a specific movie, we can make use of these correlations to recommend movies.
+Since users with similar tastes are likely to give similar ratings to a specific movie, the Gaussian process model enables us to exploit these correlations to recommend movies.
 
 It is clear that modelling human behaviour and preference is complex. This implies that using a parametric model could unintentionally constrain our model. Since the Gaussian process model is a distribution over an infinite number of functions, we are better able to model the full spectrum of highly variable human preferences by exploiting the non-parametric characteristic of Gaussian processes.
 
@@ -113,10 +113,17 @@ In this paper, we assume that user ratings follow a Gaussian distribution. We fo
 	\item \textbf{Per-movie:} The per-movie can be viewed using a similar analogy, but flipping the roles of users and items. Given the user profiles of all known user ratings for a specific movie, we predict the ratings that the remaining users are likely to give, based on the correlations between the user profiles. The user profile consists of user attributes such as age and gender.
 \end{enumerate}
 
-Here is an example of how a prediction is made from these two models. Suppose Steve is a user in the system and he has provided ratings for a few movies. From these ratings provided by Steve, we train a per-user model for Steve. In addition we provide these ratings to their respective per-movie model so as to further train the models. One movie that Steve has not rated is Jurassic Park and we are interested in predicting his rating for that movie. To do so, we first provide Steve's per-user gp model features from the movie Jurassic Park (1993, Action and Thriller) which then returns a prediction for the rating. Likewise, we provide the Jurassic Park's per movie-model with Steve's features (age, gender) and obtain another prediction for the rating. Finally, we take a weighted average of the prediction to obtain the final prediction. The approach for the weighted average will be explained under experimental evaluation.
+Here is an example of how a prediction is made from these two models.
+Suppose Cara is a user in the system and she has provided ratings for a few movies. 
+From these ratings provided by Cara, we train a per-user model for her.
+In addition we provide these ratings to their respective per-movie model so as to further train the models.
+One movie that Cara has not rated is Frozen and we are interested in predicting her rating for that movie.
+To do so, we first pass features from the movie Frozen (2013, Animation, Adventure and Comedy) into Cara's per-user GP model, which gives us a prediction for her rating.
+Likewise, we supply Frozen's per-movie model with Cara's features (age, gender) and obtain another prediction for the rating.
+Finally, we take a weighted average of the prediction to obtain the final prediction. 
+This approach for taking the weighted average will be further explained under experimental evaluation.
 
-The reason for having these two models is so that we can exploit both personal and demographic preferences. The per-user model tells us a user's personal preference for certain movie features such as genre or year of release whearas the per-movie model tells us demographic preferences for a particular movie. Another advantage of having the prediction provide by two models is that we can still make reasonable predictions when data is sparse. A new user would not provide many ratings on the system but we can give more weights to the per-movie model's prediction. Likewise for a new movie, we give more weights to the per-user model's prediction.
-
+The reason for building two models is so that we can exploit both personal and demographic preferences. The per-user model tells us a user's personal preference for certain movie features such as genre or year of release whearas the per-movie model tells us demographic preferences for a particular movie. Another advantage of utilising two models to compute predictions is that we can still make reasonable predictions even when data is sparse. A new user would not provide many ratings on the system but we can give more weights to the per-movie model's prediction. Likewise for a new movie, we give more weights to the per-user model's prediction.
 
 \subsection{Choosing Model Parameters}
 The GP function is mainly characterized by its covariance function after normalizing the data to attain a mean of 0. The covariance function produces a covariance matrix which is utilised by the Gaussian process model for inference.
@@ -153,7 +160,8 @@ $K + \sigma^{2}_{n}I$,
 \mathcal{Q}^{-1}\mathbf{y}
 \end{align*}
 
-We used a python library GPy to optimize our per user and per movie models which implements the bayesian optimization framework for maximizing the likelihood function. Through the batch gradient descent method, the maximum aposteriori(MAP) estimation gives us the maximum likelihood(Rasmussen, 1997). 
+We used a python library GPy to optimize our per-user and per-movie models.
+GPy implements the bayesian optimization framework for maximizing the likelihood function. Through the batch gradient descent method, the maximum a posteriori(MAP) estimation gives us the maximum likelihood(Rasmussen, 1997).
 
 This feedback to us critical information on the which are the important features in the per-user model through the Automatic Relevance Determination(ARD) represented by the lengthscale $\ell$. Suppose $\ell$ is short for the per user model input vector dimension "genre", then this suggests that "genre" is an important feature for predicting the rating.
 
@@ -191,7 +199,7 @@ By combining all these datasets, we obtained a processed dataset consisting of u
 
 \subsection{Procedure}
 
-The pre-processed dataset contains both numerical and categorical features. We experimented on simple models based solely on numerical features as well as models that utilizes categorical features. We also experimented with different kernels such as the linear kernel and cosine kernel in addition to the RBF kernel.  In order to test the performance of our models, the data was split using stratified sampling into train and test sets\footnote{A 70-30 split was used. Stratification was done over the user id}.
+The pre-processed dataset contains both numerical and categorical features. We experimented on simple models based solely on numerical features as well as models that utilizes categorical features. We also experimented with different kernels such as the linear kernel and cosine kernel in addition to the RBF kernel.  In order to test the performance of our models, the data was split using stratified sampling into train and test sets\footnote{A 70-30 split was used, while stratification was done over the user id.}.
 
 The per-movie model uses of the following numeric features: user age, user gender\footnote{Encoded as Female: 0 Male: 1} .
 
@@ -208,8 +216,7 @@ For each movie, the value is 1 if the movie belongs to that particular genre, 0 
 However, this technique does not scale very well as the input dimension increases with the number of categorical classes.
 Since there are 20 movie genres in total, we sought to reduce the number of dimensions for the input matrix.
 
-Through the use of Word2vec, we could transform the remaining text data into useful numerical features and reduce the dimensions of the input.
-Word2vec enables us to create word embeddings, or vector representations of words with a given corpus.
+To transform the remaining text data into useful numerical features and reduce the dimensions of the input, we employed Word2vec, which enables us to create word embeddings, or vector representations of words with a given corpus.
 Similar words are constructed such that they are close to each other within the vector space.
 We thus extracted the textual data from our datasets and processed them into a corpus suitable for training a Word2vec model on.
 The Word2vec model is then queried for vectors, $x = [x_1, \cdots, x_k]^\top$ representing each film.
@@ -250,7 +257,7 @@ Choosing from the top popular genres (based on their counts), we identify 9 buck
 This probabilistic approach allows us to compare the distance between genres and buckets. It also reduces the dimension of the input vector significantly.
 
 \section{Experimental Evaluation}
-As mentioned, our approach involves combining the predictions from the per-user and per-movie models.
+Our approach involves combining the predictions from the per-user and per-movie models.
 We thus train a GP model for each of the 6,040 users and each of the 3,090 movies using the processed data.
 The number of ratings per user ranges from 18 to 2264 with a median of 94. The number of ratings per movie ranges from 1 to 3428 with a median of 135.
 Given that the maximum training samples per GP model is only in the thousands, there was no need to use any techniques for handling large datasets in GP model.
@@ -267,7 +274,7 @@ The Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE) for the models 
 	\begin{tabular}{lllll}
 		Type & Features & Kernel & MAE & RMSE \\
 		\hline
-		\multirow{3}{*}{Per-Movie}\\
+		\multirow{3}{*}{Per-Movie}
 		& Numeric & RBF & 0.7823 & 0.9785\\
 		& Numeric & Cosine & 0.7823 & 0.9786 \\
 		& Numeric & Linear & 0.7823 & 0.9786 \\
