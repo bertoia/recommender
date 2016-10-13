@@ -239,12 +239,14 @@ The following table gives some of the cosine similarities between genre vectors 
 
 \begin{center}
 	\begin{tabular}{llc}
+		\hline
 		Genre & Genre most similar to & Similarity\\
 		\hline
 		Drama & Crime & 0.9132 \\
 		Thriller & Mystery & 0.9834 \\
 		Animation & Children & 0.9621 \\
 		Sci-fi & Fantasy & 0.8729 \\
+		\hline
 	\end{tabular}
 \end{center}
 
@@ -278,25 +280,27 @@ Given that the maximum training samples per GP model is only in the thousands, t
 Evaluating the accuracy of the models is slightly more involved as we have to feed the right entry to the right model.
 Suppose we want to evaluate the accuracy of the per-user models using the test set. For each entry on the test set,
 we pass the entry to the per-user model that matches the entry's user\_id and obtain the prediction for that entry.
-We do this for every entry on the test set and that gives us the full prediction for the test set. Likewise for per-movie models.
+We do this for every entry on the test set and that gives us the full prediction for the test set.
+The procedure is repeated in a similar manner for per-movie models.
 
-As mentioned, we experimented with various combinations of features and kernels. Below is a subset of the experimental results for the different combinations:
+As mentioned, we experimented with various combinations of features and kernels.
 The Mean Absolute Error (MAE) and R-Squared ($R^{2}$) for the models trained are given as follows:
-
 \begin{center}
 	\begin{tabular}{lllll}
+		\hline
 		Type & Features & Kernel & MAE & $R^{2}$ \\
 		\hline
 		\multirow{3}{*}{Per-Movie} &\multirow{3}{*}{Numeric}
-		 & RBF & 0.7823 & 0.2308\\
-		& & Cosine & 0.7823 & 0.2308 \\
+		 & RBF & 0.7823 & \textbf{0.2308}\\
+		& & Cosine & 0.7823 & \textbf{0.2308} \\
 		& & Linear & 0.7823 & 0.2307 \\
 		\hline
-		\multirow{5}{*}{Per-User} & Numeric & \multirow{5}{*}{RBF} & 0.8127 & 0.1663 \\
+		\multirow{5}{*}{Per-User} & Numeric & \multirow{5}{*}{RBF} & \textbf{0.8127} & \textbf{0.1663} \\
 		& OneHotEncoding & & 0.8273 & 0.1424 \\
 		& Word2vec Genres & & 0.8210 & 0.1544 \\
 		& Word2vec Movies & & 0.8278 & 0.1424 \\
 		& Probabilistic   & & 0.8204 & 0.1534\\
+		\hline
 	\end{tabular}
 \end{center}
 We observed that when predicting with just per-movie or per-user models by themselves, per-movie models out performs per-user models.
@@ -326,26 +330,28 @@ Substituting the result into the equation of $\widehat{y}_{final}$, we get the o
 \widehat{y}_{final} &=\frac{\sigma^{2}_{movie}\widehat{y}_{user} + \sigma^{2}_{user}\widehat{y}_{movie}}{\sigma^{2}_{user}+\sigma^{2}_{movie}}\\
 V[\widehat{y}_{final}]&=\frac{\sigma^{2}_{movie}\sigma^{2}_{user}}{\sigma^{2}_{user}+\sigma^{2}_{movie}}
 \end{align*}
-Here are some of the validation results for the combined predictions using the RBF kernel:
+The following table gives validation results for different types of per-user models combined with the numeric per-movie model, using the RBF kernel:
 \begin{center}
-	\begin{tabular}{lllll}
-		Combination & Per-User & Per-Movie & MAE & $R^{2}$ \\
+	\begin{tabular}{llll}
 		\hline
-		\multirow{4}{*}{Variance Avg} & Numeric & \multirow{4}{*}{Numeric} & 0.6648 & 0.2752\\
-		& OneHotEnc &  & 0.6641 & 0.2691 \\
-		& Word2Vec Genres &  & 0.6635 & 0.2752 \\
-		& Probabilistic &  & 0.6640 & 0.2724 \\
+		Combination & Per-User & MAE & $R^{2}$ \\
 		\hline
-		\multirow{4}{*}{Simple Avg} & Numeric & \multirow{4}{*}{Numeric} & 0.6653 & 0.2742\\
-		& OneHotEnc &  & 0.6647 & 0.2665 \\
-		& Word2Vec Genres &  & 0.6643 & 0.2733 \\
-		& Probabilistic &  & 0.6647 & 0.2706 \\
+		\multirow{4}{*}{Variance Avg} & Numeric &  0.6648 & \textbf{0.2752}\\
+		& OneHotEnc & 0.6641 & 0.2691 \\
+		& Word2Vec Genres  & \textbf{0.6635} & \textbf{0.2752} \\
+		& Probabilistic & 0.6640 & 0.2724 \\
+		\hline
+		\multirow{4}{*}{Simple Avg} & Numeric & 0.6653 & \textbf{0.2742}\\
+		& OneHotEnc & 0.6647 & 0.2665 \\
+		& Word2Vec Genres & \textbf{0.6643} & 0.2733 \\
+		& Probabilistic & 0.6647 & 0.2706 \\
+		\hline
 	\end{tabular}
 \end{center}
 The combined predictions are much stronger than just taking one set of predictions. Although the effect is not as dramatic as we hoped, there was a small improvement in accuracy when we used the variance weighted average over the simple average counterpart.
 
 \section{Improvements}
-The rbf kernel exploits the similarity through the euclidean distance. However, Wang(2008) mentions that the cosine distance could also give us important information to predict the ratings in the per-user and per-movie model.
+The RBF kernel exploits the similarity of inputs through the euclidean distance. However, Wang(2008) mentions that the cosine distance could also give us important information to predict the ratings in the per-user and per-movie model.
 
 Therefore, to improve the prediction ratings using Gaussian Process Regression, we could create a new kernel function as proposed by Aftab(2014) used in neural networks.
 \begin{align*}
@@ -354,9 +360,9 @@ Therefore, to improve the prediction ratings using Gaussian Process Regression, 
 	\beta\sigma^2\exp(-\gamma||\mathbf{x} - \mathbf{x}'||^{2})
 \end{align*}
 
-where the hyperparameters $\theta = \lbrace \alpha, \beta, \sigma^{2}, \gamma, ...\rbrace$ can be learn from cross validation.  
+where the hyperparameters $\theta = \lbrace \alpha, \beta, \sigma^{2}, \gamma, ...\rbrace$ can be learnt from cross validation.  
 
-Since the cosine kernel and the rbf kernel are both valid kernels, then the new kernel can be shown to be positive semi-definite and symmetric which satifies the criteria for a valid kernel.
+Since the cosine kernel and the RBF kernel are both valid kernels, then the new kernel can also be shown to be positive semi-definite and symmetric which satifies the criteria for a valid kernel.
 
 \section{References}
 
@@ -373,11 +379,10 @@ Wang, J., Vries, A. P., \& Reinders, M. J. (2008). Unified relevance models for 
 
 \section{Roles and Contributions}
 
-
 \begin{description}
 \item [Cheong Xuan Hao Filbert] Partial Modeling, Technical Evaluation
 \item [Gay Ming Jian Davis]
-\item [Karen Ang Mei Yi]
+\item [Karen Ang Mei Yi] Pre-Processing, Feature Engineering and Report Writing
 \item [Quek Chang Rong Sebastian] Pre-Processing, Feature Engineering
 \item [Vincent Seng Boon Chin] Modeling, Pre-Processing and Experimental Evaluation
 \item [Xu Ruofan] Report Writing
