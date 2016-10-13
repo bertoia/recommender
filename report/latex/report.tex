@@ -248,25 +248,64 @@ The Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE) for the models 
 
 \begin{center}
 	\begin{tabular}{lllll}
-		Type & Features & Kernel & MAE & RMSE \\
+		Type & Features & Kernel & MAE & $R^{2}$ \\
 		\hline
-		\multirow{3}{*}{Per-Movie}\\
+		\multirow{4}{*}{Per-Movie}
 		& Numeric & RBF & 0.7823 & 0.9785\\
 		& Numeric & Cosine & 0.7823 & 0.9786 \\
 		& Numeric & Linear & 0.7823 & 0.9786 \\
 		\hline
-		\multirow{4}{*}{Per-User} & Numeric & \multirow{4}{*}{RBF} & 0.8128 & 1.019 \\
+		\multirow{5}{*}{Per-User} & Numeric & \multirow{5}{*}{RBF} & 0.8128 & 1.019 \\
 		& Word2vec Genres & & 0.8210 & 1.026 \\
 		& Probabilistic   & & 0.8204 & 1.027 \\
 		& Word2vec Movies & & 0.8278 & 1.033 \\
+		& OneHotEncoding & & 0.8278 & 1.033 \\
 	\end{tabular}
 \end{center}
 We observed that when predicting with just per-movie or per-user models by themselves, per-movie models out performs per-user models.
 This could be due to per-movie models having more training points on average.
 \subsection{Combining the models}
-
-Inverse-Variance Weighting
+The predictions from the per-user and per-movie models can be combined to give an estimate with a lower variance.
+While we can take the average of both predictions as the final prediction, we can do better than that as every prediction comes with a variance which allows to calculate the optimal weights that minimises variance of the final prediction. Below we shall show how to obtain the optimal weights given the prediction variances. Suppose the per-user model returns $(\widehat{y}_{user}, \sigma^{2}_{user})$ and the per-movie model returns $(\widehat{y}_{movie},\sigma^{2}_{movie})$. Given that $\alpha + \beta = 1$:
+\begin{align*}
+	 \widehat{y}_{final} &= \alpha\,\widehat{y}_{user} + \beta\,\widehat{y}_{movie} \\
+	 V[\widehat{y}_{final}] &= V[\alpha\,\widehat{y}_{user} + \beta\,\widehat{y}_{movie}]\\
+	&= \alpha^{2}\,V[\widehat{y}_{per\_user}] + \beta^{2}\,V[\widehat{y}_{per\_movie}] \\
+	&= \alpha^{2}\,\sigma^{2}_{user} + beta^{2}\,\sigma^{2}_{movie}\\
+	&= \alpha^{2}\,\sigma^{2}_{user} + (1-\alpha)^{2}\,\sigma^{2}_{movie}\\
+	&= (\sigma^{2}_{user}+\sigma^{2}_{movie})\alpha^{2}-(2\sigma^{2}_{movie})\alpha+\sigma^{2}_{movie}
+\end{align*}
+To find the minimum, we differentiate $V[\widehat{y}_{final}]$:
+\begin{align*}
+\frac{\partial}{\partial\alpha}V[\widehat{y}_{final}] = 2(\sigma^{2}_{user}+\sigma^{2}_{movie})\alpha-(2\sigma^{2}_{movie})
+\end{align*}
+and equating it to zero give us the optimal value of $\alpha$:
+\begin{align*}
+0&=2(\sigma^{2}_{user}+\sigma^{2}_{movie})\alpha-(2\sigma^{2}_{movie})\\
+\alpha&=\sigma^{2}_{movie}/(\sigma^{2}_{user}+\sigma^{2}_{movie})
+\end{align*}
+Substituting the result into the equation of $\widehat{y}_{final}$, we get the optimal method to combine the two predictions:
+\begin{align*}
+\widehat{y}_{final} &=\frac{\sigma^{2}_{movie}\widehat{y}_{user} + \sigma^{2}_{user}\widehat{y}_{movie}}{\sigma^{2}_{user}+\sigma^{2}_{movie}}\\
+V[\widehat{y}_{final}]&=\frac{\sigma^{2}_{movie}\sigma^{2}_{user}}{\sigma^{2}_{user}+\sigma^{2}_{movie}}
+\end{align*}
+Here are some of the validation results for the combined predictions using the RBF kernel:
+\begin{center}
+	\begin{tabular}{lllll}
+		Combination & Per-User & Per-Movie & MAE & $R^{2}$ \\
+		\hline
+		\multirow{4}{*}{Variance Avg} & Numeric & \multirow{4}{*}{Numeric} & 0.6648 & 0.2752\\
+		& OneHotEnc &  & 0.6641 & 0.2691 \\
+		& Word2Vec Genres &  & 0.6635 & 0.2752 \\
+		& Probabilistic &  & 0.6640 & 0.2724 \\
+		\hline
+		\multirow{4}{*}{Simple Avg} & Numeric & \multirow{4}{*}{Numeric} & 0.6653 & 0.2742\\
+		& OneHotEnc &  & 0.6647 & 0.2665 \\
+		& Word2Vec Genres &  & 0.6643 & 0.2733 \\
+		& Probabilistic &  & 0.6647 & 0.2706 \\
+	\end{tabular}
+\end{center}
+The combined predictions are much stronger than just taking one set of predictions. Although the effect is not as dramatic as we hoped, there is a small improvement in accuracy when we use the variance weighted average over a simple average.
 \section{References}
-Note: max 6 pages
 
 \end{document}
