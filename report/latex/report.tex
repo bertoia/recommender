@@ -273,22 +273,22 @@ we pass the entry to the per-user model that matches the entry's user\_id and ob
 We do this for every entry on the test set and that gives us the full prediction for the test set. Likewise for per-movie models.
 
 As mentioned, we experimented with various combinations of features and kernels. Below is a subset of the experimental results\footnote{Full result is provided in the appendix} for the different combinations:
-The Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE) for the models trained are given as follows:
+The Mean Absolute Error (MAE) and R-Squared ($R^{2}$) for the models trained are given as follows:
 
 \begin{center}
 	\begin{tabular}{lllll}
 		Type & Features & Kernel & MAE & $R^{2}$ \\
 		\hline
-		\multirow{3}{*}{Per-Movie}
-		& Numeric & RBF & 0.7823 & 0.9785\\
-		& Numeric & Cosine & 0.7823 & 0.9786 \\
-		& Numeric & Linear & 0.7823 & 0.9786 \\
+		\multirow{3}{*}{Per-Movie} &\multirow{3}{*}{Numeric}
+		 & RBF & 0.7823 & 0.2308\\
+		& & Cosine & 0.7823 & 0.2308 \\
+		& & Linear & 0.7823 & 0.2307 \\
 		\hline
-		\multirow{5}{*}{Per-User} & Numeric & \multirow{5}{*}{RBF} & 0.8128 & 1.019 \\
-		& Word2vec Genres & & 0.8210 & 1.026 \\
-		& Probabilistic   & & 0.8204 & 1.027 \\
-		& Word2vec Movies & & 0.8278 & 1.033 \\
-		& OneHotEncoding & & 0.8278 & 1.033 \\
+		\multirow{5}{*}{Per-User} & Numeric & \multirow{5}{*}{RBF} & 0.8127 & 0.1663 \\
+		& OneHotEncoding & & 0.8273 & 0.1424 \\
+		& Word2vec Genres & & 0.8210 & 0.1544 \\
+		& Word2vec Movies & & 0.8278 & 0.1424 \\
+		& Probabilistic   & & 0.8204 & 0.1534\\
 	\end{tabular}
 \end{center}
 We observed that when predicting with just per-movie or per-user models by themselves, per-movie models out performs per-user models.
@@ -334,9 +334,9 @@ Here are some of the validation results for the combined predictions using the R
 		& Probabilistic &  & 0.6647 & 0.2706 \\
 	\end{tabular}
 \end{center}
-The combined predictions are much stronger than just taking one set of predictions. Although the effect is not as dramatic as we hoped, there is a small improvement in accuracy when we use the variance weighted average over a simple average.
+The combined predictions are much stronger than just taking one set of predictions. Although the effect is not as dramatic as we hoped, there was a small improvement in accuracy when we used the variance weighted average over the simple average counterpart.
 
-\subsection{Future Work}
+\section{Improvements}
 The rbf kernel exploits the similarity through the euclidean distance. However, Wang(2008) mentions that the cosine distance could also give us important information to predict the ratings in the per-user and per-movie model.
 
 Therefore, to improve the prediction ratings using Gaussian Process Regression, we could create a new kernel function as proposed by Aftab(2014) used in neural networks.
@@ -351,7 +351,6 @@ where the hyperparameters $\theta = \lbrace \alpha, \beta, \sigma^{2}, \gamma, .
 Since the cosine kernel and the rbf kernel are both valid kernels, then the new kernel can be shown to be positive semi-definite and symmetric which satifies the criteria for a valid kernel.
 
 \section{References}
-Note: max 6 pages \textbf{TOREMOVE THIS LINE}\\ 
 
 Aftab, W., Moinuddin, M., \& Shaikh, M. S. (2014). A Novel Kernel for RBF Based Neural Networks. Abstract and Applied Analysis, 2014, 1-10. doi:10.1155/2014/176253\\
 
