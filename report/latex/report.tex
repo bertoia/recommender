@@ -308,7 +308,7 @@ While we can take the average of both predictions as the final prediction, we ca
 	 \widehat{y}_{final} &= \alpha\,\widehat{y}_{user} + \beta\,\widehat{y}_{movie} \\
 	 V[\widehat{y}_{final}] &= V[\alpha\,\widehat{y}_{user} + \beta\,\widehat{y}_{movie}]\\
 	&= \alpha^{2}\,V[\widehat{y}_{per\_user}] + \beta^{2}\,V[\widehat{y}_{per\_movie}] \\
-	&= \alpha^{2}\,\sigma^{2}_{user} + beta^{2}\,\sigma^{2}_{movie}\\
+	&= \alpha^{2}\,\sigma^{2}_{user} + \beta^{2}\,\sigma^{2}_{movie}\\
 	&= \alpha^{2}\,\sigma^{2}_{user} + (1-\alpha)^{2}\,\sigma^{2}_{movie}\\
 	&= (\sigma^{2}_{user}+\sigma^{2}_{movie})\alpha^{2}-(2\sigma^{2}_{movie})\alpha+\sigma^{2}_{movie}
 \end{align*}
