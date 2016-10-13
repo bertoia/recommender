@@ -105,7 +105,7 @@ The reason for having these two models is so that we can exploit both personal a
 The GP function is mainly characterized by its covariance function after normalizing the data to attain a mean of 0. The covariance function produces a covariance matrix which is utilised by the Gaussian process model for inference.
 Our choice of kernel for both experimental models, per user and per movie, was the radial basis function(RBF) kernel
 \begin{align*}
-	\textbf{K} (\textbf{x},\textbf{x}') = \sigma^2\exp(-\frac{1}{2}\sum_{i=1}^{d}
+	k (\textbf{x},\textbf{x}') = \sigma^2\exp(-\frac{1}{2}\sum_{i=1}^{d}
 	\frac{(x_{i} - x_{i}')^{2}}{\ell_{i}^{2}})
 \end{align*} 
 where the hyperparameters $\sigma^{2}$ is the variance, $\ell $ is the lengthscale, d is the dimension of the input vector $ x_{i}. $
@@ -113,9 +113,14 @@ where the hyperparameters $\sigma^{2}$ is the variance, $\ell $ is the lengthsca
 The choice of the rbf kernel was due to its ability to produce similar predictive ratings for two inputs with similar features based on their distance. If two users have contrasting preferences, it is highly unlikely that both will assign the same rating to their opposing's favorite movie.
 
 \subsection{Learning the hyper-parameters}
-\textbf{Lemma}: The product of two Gaussians gives another (un-normalized) Gaussian.
+\textbf{Lemma}: The product of two Gaussians function gives another (un-normalized) Gaussian function.
 
-The log marginal likelihood of the gaussian process can be computed by marginalizing the likelihood with respect to function \textbf{f} and by using the lemma we obtain 
+\begin{align*}
+p(\mathbf{y}|X,\theta) = \int p(\mathbf{y}|\mathbf{f},X,\theta)
+p(\mathbf{f}|X,\theta) d\mathbf{f}
+\end{align*}
+
+where the prior \textbf{f} $|X,\theta \sim$ N(0,K).The log marginal likelihood of the gaussian process can be computed by marginalizing the likelihood with respect to function \textbf{f} and by using the lemma we obtain 
 
 \begin{align*}
 \text{log }p(\mathbf{y}|X,\theta) = 
@@ -266,7 +271,23 @@ This could be due to per-movie models having more training points on average.
 \subsection{Combining the models}
 
 Inverse-Variance Weighting
+
+\subsection{Future Work}
+The rbf kernel exploits the similarity through the euclidean distance. However, Wang(2008) mentions that the cosine distance could also give us important information to predict the ratings in the per-user and per-movie model.
+
+Therefore, to improve the prediction ratings using Gaussian Process Regression, we could create a new kernel function as proposed by Aftab(2014) used in neural networks.
+\begin{align*}
+	k (\textbf{x},\textbf{x}') = 
+	\alpha \cos(x,x') + 
+	\beta\sigma^2\exp(-\gamma||\mathbf{x} - \mathbf{x}'||^{2})
+\end{align*}
+
+where the hyperparameters $\theta = \lbrace \alpha, \beta, \sigma^{2}, \gamma, ...\rbrace$ can be learn from cross validation.  
+
+Since the cosine kernel and the rbf kernel are both valid kernels, then the new kernel can be shown to be positive semi-definite and symmetric which satifies the criteria for a valid kernel.
+
 \section{References}
 Note: max 6 pages
+
 
 \end{document}
